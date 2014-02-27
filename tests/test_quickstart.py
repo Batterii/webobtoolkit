@@ -208,6 +208,11 @@ class TestQuickStart(unittest.TestCase):
                                    query_string=dict(bar="x"))
         self.assert_("foo" not in req.params, str(req))
         self.assert_("bar" in req.params, str(req))
+        
+    def testEnvironHandling(self):
+        req = client.Client._make_request("http://something.example.com?foo=x", environ={"webob.client.timeout": 30})
+        self.assert_("webob.client.timeout" in req.environ)
+        self.assert_(req.environ["webob.client.timeout"] == 30)
 
     def testUploadFiles(self):
         """

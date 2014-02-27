@@ -54,12 +54,16 @@ class Client(object):
     will be called for every call to app
     """
 
-    def __init__(self, pipeline=None, assert_=None):
+    def __init__(self, pipeline=None, assert_=None, environ={}):
         self._pipeline = pipeline or client_pipeline()
         if assert_:
             self._assert_ = assert_
         else:
             self._assert_ = None
+        if environ:
+            self._environ = environ
+        else:
+            self._environ = None
 
     def get(self, url, query_string=None, headers={}, assert_=None):
         """
@@ -245,7 +249,8 @@ class Client(object):
                                   method=method.upper(),
                                   query_string=query_string,
                                   post=post,
-                                  headers=headers)
+                                  headers=headers,
+                                  environ=self._environ)
         response = request.send(self._pipeline)
 
         if assert_:
@@ -257,7 +262,7 @@ class Client(object):
         return response
 
     @classmethod
-    def _make_request(cls, url, method="get", query_string=None, post=None, headers={}):
+    def _make_request(cls, url, method="get", query_string=None, post=None, headers={}, environ=None):
         """
         :rtype: :class:`webob.Request`
 
@@ -288,6 +293,9 @@ class Client(object):
 
         if post:
             kw["POST"] = post
+        
+        if environ:
+            kw["environ"] = environ.items()
 
         kw = {k: v for k, v in kw.items() if v}
         return Request.blank(url, **kw)
